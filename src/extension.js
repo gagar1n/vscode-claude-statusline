@@ -265,11 +265,17 @@ function render() {
 
   // ---- format ----
 
+  const fmtLimit = (label, lim) => {
+    let s = `${label}:${lim.pct}%`;
+    if (lim.resets_at) s += ` (${fmtEta(lim.resets_at)})`;
+    if (lim.stale) s += ' stale';
+    return s;
+  };
   const parts = [model];
   if (effort) parts.push(`effort:${effort}`);
-  if (h5) parts.push(`5h:${h5.pct}%${h5.stale ? '⌛' : ''}`);
-  if (d7) parts.push(`7d:${d7.pct}%${d7.stale ? '⌛' : ''}`);
-  parts.push(`ctx:${ctxPct}%${ctxSource === 'cached' && cacheStale ? '⌛' : ''}`);
+  if (h5) parts.push(fmtLimit('5h', h5));
+  if (d7) parts.push(fmtLimit('7d', d7));
+  parts.push(`ctx:${ctxPct}%${ctxSource === 'cached' && cacheStale ? ' stale' : ''}`);
   const text = parts.join(' · ');
 
   // Severity: count fresh metrics only — stale data shouldn't keep the bar red forever.
@@ -308,8 +314,8 @@ function formatTooltip(s) {
   md.appendMarkdown(`| Model | \`${escapeMd(s.model)}\` | cached |\n`);
   md.appendMarkdown(`| Effort | ${s.effort ? '`' + escapeMd(s.effort) + '`' : '_n/a_'} | cached |\n`);
   md.appendMarkdown(`| Context | ${s.ctxPct}% | ${s.ctxSource === 'live' ? 'live (' + fmtAge(s.ctxAgeSec) + ' ago)' : 'cached (' + fmtAge(s.ctxAgeSec) + ' ago)'} |\n`);
-  if (s.h5) md.appendMarkdown(`| 5-hour limit | ${s.h5.pct}%${s.h5.resets_at ? ' (resets in ' + fmtEta(s.h5.resets_at) + ')' : ''} | cached${s.h5.stale ? ' ⌛' : ''} |\n`);
-  if (s.d7) md.appendMarkdown(`| 7-day limit  | ${s.d7.pct}%${s.d7.resets_at ? ' (resets in ' + fmtEta(s.d7.resets_at) + ')' : ''} | cached${s.d7.stale ? ' ⌛' : ''} |\n`);
+  if (s.h5) md.appendMarkdown(`| 5-hour limit | ${s.h5.pct}%${s.h5.resets_at ? ' (resets in ' + fmtEta(s.h5.resets_at) + ')' : ''} | cached${s.h5.stale ? ' (stale)' : ''} |\n`);
+  if (s.d7) md.appendMarkdown(`| 7-day limit  | ${s.d7.pct}%${s.d7.resets_at ? ' (resets in ' + fmtEta(s.d7.resets_at) + ')' : ''} | cached${s.d7.stale ? ' (stale)' : ''} |\n`);
 
   md.appendMarkdown(`\n_Cache_: \`${escapeMd(s.cachePath)}\` · age ${fmtAge(s.cacheAgeSec)}\n\n`);
   if (s.transcriptPath) {
@@ -317,7 +323,7 @@ function formatTooltip(s) {
   }
 
   if (s.cacheStale) {
-    md.appendMarkdown(`⌛ Rate-limit data is older than the stale threshold. Run a Claude Code prompt in a terminal to refresh it; rate limits are not exposed by the VS Code panel.\n`);
+    md.appendMarkdown(`Note: rate-limit data is older than the stale threshold. Run a Claude Code prompt in a terminal to refresh it; rate limits are not exposed by the VS Code panel.\n`);
   }
   return md;
 }

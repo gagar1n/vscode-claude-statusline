@@ -35,10 +35,11 @@ Implications:
 
 - **Context % is always live**, regardless of which surface you use to
   prompt Claude.
-- **Rate-limit values can be stale.** When the cache is older than the
-  stale threshold (default 5 min) the rate-limit segments are tagged
-  with `⌛` in the status bar and the tooltip; their values will not
-  update until you run a Claude Code prompt in a terminal.
+- **Rate-limit values can be stale.** Each rate-limit segment shows the
+  reset ETA inline, e.g. `5h:23% (4h12m)`. When the cache is older than
+  the stale threshold (default 5 min) the segment gets a trailing
+  `stale` marker; the values will not update until you run a Claude
+  Code prompt in a terminal.
 - The status-bar background colour reflects the worst **fresh** metric
   only — stale rate-limit values do not keep the bar red forever.
 
