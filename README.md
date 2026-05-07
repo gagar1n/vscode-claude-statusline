@@ -51,21 +51,72 @@ That installer writes the cache file this extension reads:
 Then run any Claude Code session in a terminal once so the cache file
 gets created.
 
-## Install (development / sideload)
+## Install
 
-This extension is not published to the VS Code Marketplace. Install
-locally:
+This extension is not on the VS Code Marketplace. Three install paths
+depending on what you want.
+
+### A. From a GitHub Release (recommended)
+
+Each tagged release attaches a prebuilt `.vsix` file, produced by the
+[`Release` workflow](.github/workflows/release.yml).
+
+1. Open the [Releases page](https://github.com/gagar1n/vscode-claude-statusline/releases)
+   and download the latest `claude-statusline-<version>.vsix`.
+2. Install it from the command line:
+
+   ```sh
+   code --install-extension claude-statusline-<version>.vsix
+   ```
+
+   Or, in VS Code: open the **Extensions** view, click the `…` menu,
+   choose **Install from VSIX…**, and pick the downloaded file.
+
+3. Reload the window (`Ctrl/Cmd+Shift+P` → "Developer: Reload Window").
+
+### B. Build from source
+
+Prerequisites: a recent **Node.js** (≥ 18) and **npm**, plus the **`code`**
+CLI from VS Code.
 
 ```sh
-cd ~/r/gagar1n/vscode-claude-statusline
-npm install -g @vscode/vsce          # one-time, if you don't have it
-vsce package                         # produces claude-statusline-0.1.0.vsix
-code --install-extension claude-statusline-0.1.0.vsix
+# Ubuntu / Debian
+sudo apt install -y nodejs npm
+
+# macOS (Homebrew)
+brew install node
+
+# Verify
+node --version    # v18+ recommended
+npm  --version
+code --version
 ```
 
-To iterate on the code without packaging, open the folder in VS Code
-and press `F5` — it launches an Extension Development Host with the
-extension loaded.
+Then build and install:
+
+```sh
+git clone https://github.com/gagar1n/vscode-claude-statusline
+cd vscode-claude-statusline
+npx --yes @vscode/vsce package          # produces claude-statusline-<version>.vsix
+code --install-extension claude-statusline-*.vsix
+```
+
+`npx` fetches `vsce` on demand into the npm cache; no global install is
+needed. The extension itself has no runtime dependencies, so there is
+no `npm install` step.
+
+### C. Run in development mode (no install)
+
+To iterate on the code without packaging:
+
+1. Open the project folder in VS Code (`code .` from the repo root).
+2. Press **F5**. VS Code launches an **Extension Development Host**
+   window with the extension loaded.
+3. Edit `src/extension.js`; reload the development-host window
+   (`Ctrl/Cmd+R` inside it) to pick up changes.
+
+This path uses VS Code's bundled Node runtime — Node does not need to
+be installed system-wide for this mode.
 
 ## Settings
 
@@ -95,13 +146,47 @@ extension loaded.
 - **Free-tier accounts** don't get rate-limit data from the API; the
   `5h` / `7d` segments simply won't appear.
 
+## Release process
+
+Releases are produced by the GitHub Actions workflow at
+[`.github/workflows/release.yml`](.github/workflows/release.yml). It
+runs on every push of a tag matching `v*` and attaches the built
+`.vsix` to a GitHub Release named after the tag.
+
+To cut a release:
+
+```sh
+# 1. Bump the version in package.json (must match the tag without the leading "v").
+$EDITOR package.json
+
+# 2. Commit and tag.
+git commit -am "Release v0.2.0"
+git tag v0.2.0
+git push --follow-tags
+```
+
+The workflow then:
+
+1. Verifies the tag matches `package.json`'s `version` (fails fast if not).
+2. Packages the extension with `vsce`.
+3. Uploads the `.vsix` as a workflow artifact (always).
+4. On a tag push, creates a GitHub Release with auto-generated release
+   notes and attaches the `.vsix`.
+
+You can also trigger the workflow manually from the Actions tab via
+**Run workflow**; that produces an artifact but skips the release step
+because no tag is involved.
+
 ## Project layout
 
 ```
 vscode-claude-statusline/
-├── package.json        # extension manifest
+├── .github/
+│   └── workflows/
+│       └── release.yml     # build + GitHub Release on tag push
+├── package.json            # extension manifest
 ├── src/
-│   └── extension.js    # implementation (plain JS, no build step)
+│   └── extension.js        # implementation (plain JS, no build step)
 ├── README.md
 ├── LICENSE
 ├── .vscodeignore
