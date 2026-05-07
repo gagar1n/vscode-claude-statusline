@@ -1,0 +1,70 @@
+{
+  "name": "claude-statusline",
+  "displayName": "Claude Code Status Line",
+  "description": "Show Claude Code model, thinking effort, rate-limit usage and context-window usage in the VS Code status bar.",
+  "version": "0.1.0",
+  "license": "MIT",
+  "publisher": "gagar1n",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/gagar1n/vscode-claude-statusline"
+  },
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "main": "./src/extension.js",
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "contributes": {
+    "configuration": {
+      "title": "Claude Code Status Line",
+      "properties": {
+        "claudeStatusline.cachePath": {
+          "type": "string",
+          "default": "",
+          "description": "Path to the JSON cache file written by the Claude Code statusLine script. Empty string means ~/.claude/.statusline-cache.json."
+        },
+        "claudeStatusline.refreshIntervalMs": {
+          "type": "number",
+          "default": 2000,
+          "minimum": 250,
+          "description": "How often (ms) to re-read the cache file and update the status bar."
+        },
+        "claudeStatusline.staleThresholdSec": {
+          "type": "number",
+          "default": 300,
+          "minimum": 5,
+          "description": "Mark data as stale and dim the status bar when the cache file mtime is older than this (seconds)."
+        },
+        "claudeStatusline.alignment": {
+          "type": "string",
+          "enum": [
+            "left",
+            "right"
+          ],
+          "default": "right",
+          "description": "Status bar alignment."
+        },
+        "claudeStatusline.priority": {
+          "type": "number",
+          "default": 100,
+          "description": "Status bar priority (higher = closer to the centre of the bar)."
+        }
+      }
+    },
+    "commands": [
+      {
+        "command": "claudeStatusline.refresh",
+        "title": "Claude Status Line: Refresh"
+      },
+      {
+        "command": "claudeStatusline.openCache",
+        "title": "Claude Status Line: Open Cache File"
+      }
+    ]
+  }
+}
