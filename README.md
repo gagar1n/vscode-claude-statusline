@@ -29,7 +29,7 @@ extension piggybacks on the terminal CLI's status-line script:
    redraw, passing a JSON blob via stdin (model, effort, rate limits,
    context, etc.).
 2. The companion script in
-   [claude-prompt](../claude-prompt) caches that JSON to
+   [claude-prompt](https://github.com/gagar1n/claude-prompt) caches that JSON to
    `~/.claude/.statusline-cache.json` on every redraw.
 3. This extension polls that cache file every 2 seconds and renders the
    same fields as a VS Code status-bar item.
@@ -41,11 +41,12 @@ after a configurable timeout.
 
 ## Prerequisites
 
-Install the [claude-prompt](../claude-prompt) bash status line first.
+Install the [claude-prompt](https://github.com/gagar1n/claude-prompt) bash status line first.
 That installer writes the cache file this extension reads:
 
 ```sh
-~/r/gagar1n/claude-prompt/install.sh
+git clone https://github.com/gagar1n/claude-prompt.git
+cd claude-prompt && ./install.sh
 ```
 
 Then run any Claude Code session in a terminal once so the cache file
