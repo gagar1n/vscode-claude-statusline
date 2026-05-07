@@ -22,22 +22,25 @@ prefixed with `(stale)` and the background colour is dropped.
 
 ## How it works
 
-VS Code's Claude extension does not surface live session metrics. This
-extension piggybacks on the terminal CLI's status-line script:
+VS Code's Claude extension does not expose its session metrics. The
+extension reads from two places to assemble a live status:
 
-1. The Claude Code CLI calls a configured shell script for every status
-   redraw, passing a JSON blob via stdin (model, effort, rate limits,
-   context, etc.).
-2. The companion script in
-   [claude-prompt](https://github.com/gagar1n/claude-prompt) caches that JSON to
-   `~/.claude/.statusline-cache.json` on every redraw.
-3. This extension polls that cache file every 2 seconds and renders the
-   same fields as a VS Code status-bar item.
+| Field         | Source                                                                                                                                                  |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Context %     | **Live** — the last assistant message in the most recently modified transcript at `~/.claude/projects/<workspace>/<sessionId>.jsonl`. Updated on every assistant turn from any session, terminal **or** VS Code panel. |
+| Model, Effort | **Cached** — `~/.claude/.statusline-cache.json`, written by the [claude-prompt](https://github.com/gagar1n/claude-prompt) bash status-line script.        |
+| Rate limits (5h, 7d) | **Cached** — same file. The Anthropic API only returns these via response headers, and Claude Code does not persist them anywhere else, so they refresh only when a terminal CLI prompt runs the bash status-line script. |
 
-This means the values reflect whatever **terminal** Claude Code session
-is currently active. If you're not running Claude Code in a terminal,
-the extension shows the most recent cached state and marks it stale
-after a configurable timeout.
+Implications:
+
+- **Context % is always live**, regardless of which surface you use to
+  prompt Claude.
+- **Rate-limit values can be stale.** When the cache is older than the
+  stale threshold (default 5 min) the rate-limit segments are tagged
+  with `⌛` in the status bar and the tooltip; their values will not
+  update until you run a Claude Code prompt in a terminal.
+- The status-bar background colour reflects the worst **fresh** metric
+  only — stale rate-limit values do not keep the bar red forever.
 
 ## Prerequisites
 
@@ -123,11 +126,13 @@ be installed system-wide for this mode.
 
 | Setting                              | Default                              | Description                                                                 |
 | ------------------------------------ | ------------------------------------ | --------------------------------------------------------------------------- |
-| `claudeStatusline.cachePath`         | `~/.claude/.statusline-cache.json`   | Path to the JSON cache file. Empty string falls back to the default.        |
-| `claudeStatusline.refreshIntervalMs` | `2000`                               | How often (ms) to re-read the cache file.                                   |
-| `claudeStatusline.staleThresholdSec` | `300`                                | Mark data as stale when the cache file mtime exceeds this many seconds.    |
-| `claudeStatusline.alignment`         | `right`                              | `left` or `right` side of the status bar.                                  |
-| `claudeStatusline.priority`          | `100`                                | Status bar priority (higher = closer to centre).                            |
+| `claudeStatusline.cachePath`             | `~/.claude/.statusline-cache.json` | Path to the JSON cache file. Empty string falls back to the default.                                                                                                                  |
+| `claudeStatusline.transcriptDir`         | `~/.claude/projects`               | Directory tree containing Claude Code session transcripts. The most recently modified `.jsonl` here is tailed for the live context %.                                                 |
+| `claudeStatusline.refreshIntervalMs`     | `2000`                             | How often (ms) to re-read the cache and transcript.                                                                                                                                   |
+| `claudeStatusline.staleThresholdSec`     | `300`                              | Mark data as stale when the source file's mtime exceeds this many seconds.                                                                                                            |
+| `claudeStatusline.contextWindowOverride` | `0` (auto)                         | Override the model's context-window size (in tokens). 0 means auto-detect: cache → `[1m]` heuristic → 200000.                                                                         |
+| `claudeStatusline.alignment`             | `right`                            | `left` or `right` side of the status bar.                                                                                                                                             |
+| `claudeStatusline.priority`              | `100`                              | Status bar priority (higher = closer to centre).                                                                                                                                      |
 
 ## Commands
 

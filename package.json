@@ -2,7 +2,7 @@
   "name": "claude-statusline",
   "displayName": "Claude Code Status Line",
   "description": "Show Claude Code model, thinking effort, rate-limit usage and context-window usage in the VS Code status bar.",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "license": "MIT",
   "publisher": "gagar1n",
   "repository": {
@@ -53,6 +53,17 @@
           "type": "number",
           "default": 100,
           "description": "Status bar priority (higher = closer to the centre of the bar)."
+        },
+        "claudeStatusline.transcriptDir": {
+          "type": "string",
+          "default": "",
+          "description": "Directory holding Claude Code transcripts. Empty string means ~/.claude/projects. The extension finds the most recently modified .jsonl under this tree and reads the last assistant message's usage block to compute live context-window %."
+        },
+        "claudeStatusline.contextWindowOverride": {
+          "type": "number",
+          "default": 0,
+          "minimum": 0,
+          "description": "Override the model's context-window size (in tokens). 0 means auto-detect — first try the cache's context_window.context_window_size, then a [1m]-suffix heuristic on the model id, otherwise fall back to 200000."
         }
       }
     },
